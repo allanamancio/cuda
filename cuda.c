@@ -1,6 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct { 
+	int row;
+	int col;
+	long **tab;
+} matr;
+
+int SIZE = 3;
+
+
+//DEBUG
+void print_matrix(matr *m) {
+	for (int i = 0; i < m->row; i++) {
+		for (int j = 0; j < m->col; j++) {
+			printf("matr[%d][%d] = %ld\n", i, j, m->tab[i][j]);
+		}
+	}
+	printf("\n");
+}
+
 void *emalloc(size_t size) {
 	void *memory = malloc(size);
 
@@ -14,41 +33,49 @@ void *emalloc(size_t size) {
 
 void file_to_matrix(FILE *path_matr, matr *m) {
 	/*Reads a file and get the matrix 3x3 from it*/
-
-	// Variables
-	char line[4];
-	long **matrix;
-	long ai1, ai2, ai3;
-
 	// Creating matrix
-	matrix = (long**) emalloc(3 * sizeof(long*));
-	for (int i = 0; i < 3; i++) matrix[i] = (long*) emalloc(3 * sizeof(long));
+	long **matrix = (long**) emalloc(SIZE * sizeof(long*));
+	for (int i = 0; i < SIZE; i++) matrix[i] = (long*) emalloc(SIZE * sizeof(long));
 
-	fscanf(path_matr, "%[^\n]", line);
+	char line[4];
+	fscanf(path_matr, " %[^\n]", line);
+
 	// Filling matrix
-	for (int i = 0; i < 3; i++)
-		fscanf(path_matr, "%ld %ld %ld", &matrix[i][0], &matrix[i][1], &matrix[i][2])
+	for (int i = 0; i < SIZE; i++) {
+		for (int j = 0; j < SIZE; j++) {
+			fscanf(path_matr, "%ld", &matrix[i][j]);
+		}
+	}
+
+	m->row = SIZE;
+	m->col = SIZE;
+	m->tab = matrix;
 }
 
 int main(int args, char *argv[]) {
-	FILE *path_matr;
-	int n_matr; // Number of matrices
-
 	/*Input validation*/
 	if (args != 2) {
 		fprintf(stderr, "ERROR: Invalid number of arguments.\n");
 		exit(1);
 	}
 
-	path_matr = fopen(argv[0], "r");
+	FILE *path_matr = fopen(argv[1], "r");
 	if (path_matr == NULL) {
 		fprintf(stderr, "ERROR: Invalid file to matrices.\n");
 		exit(1);
 	}
 
 	/*Getting the matrices*/
-	fscanf(path_matr, "%d", n_matr);
+	int n_matr; // Number of matrices
+	fscanf(path_matr, "%d", &n_matr);
+	matr *matrices = emalloc(n_matr * sizeof(matr));
+
 	for (int i = 0; i < n_matr; i++) {
-		file_to_matrix(path_matr, ); // COMPLETAR
+		file_to_matrix(path_matr, &matrices[i]); // COMPLETAR
+		print_matrix(&matrices[i]);
 	}
+
+	for (int i=0 i < n_matr; i++)
+		free(matrices[i].tab);
+	free(matrices);
 }
