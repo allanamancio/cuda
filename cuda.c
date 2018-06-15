@@ -9,14 +9,11 @@ typedef struct {
 
 int SIZE = 3;
 
-
 //DEBUG
 void print_matrix(matr *m) {
-	for (int i = 0; i < m->row; i++) {
-		for (int j = 0; j < m->col; j++) {
+	for (int i = 0; i < m->row; i++)
+		for (int j = 0; j < m->col; j++)
 			printf("matr[%d][%d] = %ld\n", i, j, m->tab[i][j]);
-		}
-	}
 	printf("\n");
 }
 
@@ -37,9 +34,8 @@ void file_to_matrix(FILE *path_matr, matr *m) {
 	long **matrix = (long**) emalloc(SIZE * sizeof(long*));
 	for (int i = 0; i < SIZE; i++) matrix[i] = (long*) emalloc(SIZE * sizeof(long));
 
-	char line[4];
+	char line[20];
 	fscanf(path_matr, " %[^\n]", line);
-
 	// Filling matrix
 	for (int i = 0; i < SIZE; i++) {
 		for (int j = 0; j < SIZE; j++) {
@@ -75,7 +71,11 @@ int main(int args, char *argv[]) {
 		print_matrix(&matrices[i]);
 	}
 
-	for (int i=0 i < n_matr; i++)
+	for (int i=0; i < n_matr; i++)
 		free(matrices[i].tab);
+	
 	free(matrices);
+	fclose(path_matr);
+
+	return 0;
 }
