@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cuda_profiler_api.h> //GPU
 
 typedef struct { 
 	int row;
@@ -67,10 +68,17 @@ int main(int args, char *argv[]) {
 	matr *matrices = emalloc(n_matr * sizeof(matr));
 
 	for (int i = 0; i < n_matr; i++) {
-		file_to_matrix(path_matr, &matrices[i]); // COMPLETAR
+		file_to_matrix(path_matr, &matrices[i]);
 		print_matrix(&matrices[i]);
 	}
 
+	int devId = 10; //GPU
+	checkCuda(cudaSetDevice(devId)); //GPU
+  	cudaDeviceReset(); //GPU
+
+	matr *matrices_gpu = emalloc(n_matr * sizeof(matr)); //GPU
+
+	/*Finishing*/
 	for (int i=0; i < n_matr; i++)
 		free(matrices[i].tab);
 	
