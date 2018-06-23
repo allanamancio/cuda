@@ -1,0 +1,45 @@
+Relatório
+
+Integrantes:
+
+Allan Amancio Rocha // NUSP 9761614
+
+Enzo Hideki Nakamura // NUSP 9793742
+
+1. PROBLEMA
+
+	Implementar um tipo de operador redução que consiste em pegar o mínimo de cada posição entre n matrizes 3x3 e formar uma matriz resultante contendo esses mínimos. Isso deve ser feito utilizando uma GPU da NVDIA através da API CUDA usando a linguagem de programação C.
+
+2. SOLUÇÃO IMPLEMENTADA
+
+	Cada matriz foi representada unidimensionalmente. Os elementos da coleção de matrizes da entrada foram representados como um vetor e a matriz dos resultados também foi representada como um vetor. Um dos motivos para tal representação foi a dificuldade encontrada para copiar matrizes do hospedeiro para o dispositivo, e vice-versa.
+
+2.1 DISPOSIÇÃO DAS THREADS
+	
+	Para a disposição das threads, consideramos a grid como a matriz inteira, onde cada tile possui o tamanho de exatamente um elemento da matriz.
+
+2.3 MIN
+
+	Para a função de minímo sem divergência de branch, utilizamos um macro com apenas operadores aritméticos e em bits. 	
+
+3. VIABILIDADE
+	
+	Foi feita uma versão resolvendo o problema descrito no item 1, porém usando CPU e pthreads. Realizando a comparação de ambos os desempenhos, notou-se que os tempos de execução foram os seguintes (em microsegundos):
+
+	CPU:	681.00		1154.00		980.00	
+	GPU:	637.00		548.00		752.00
+
+	Isto é, o desempenho da GPU foi ligeiramente melhor comparado ao da CPU.
+	Obs.: Os testes foram realizados com apenas 3 matrizes 3x3.
+
+	Portanto, reduzir as matrizes utilizando a GPU é viável.
+
+4. EXECUÇÂO DOS PROGRAMAS
+
+	Foram realizadas duas soluções do problema. Uma envolve o uso da GPU, conforme a especificação, outra da CPU.
+	
+	Para executar a versão GPU, compile o programa com o comando 'make main' no terminal.
+	Para rodar o programa, execute: ./main <caminho ao arquivo de entrada>
+
+	Para executar a versão CPU, compile o programa com o comando 'make cpu' no terminal.
+	Para rodar o programa, execute: ./cpu <caminho ao arquivo de entrada>
