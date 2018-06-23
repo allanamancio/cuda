@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <cuda_profiler_api.h> //GPU
+#include <pthread.h>
+#include <math.h>
+#include <limits.h> //LONG_MAX
+#include <sys/time.h>
+
+#define min(x,y) (y + ((x - y) & ((x - y) >> (sizeof(long) * 8 - 1))))
 
 typedef struct { 
 	int row;
@@ -9,8 +14,10 @@ typedef struct {
 } matr;
 
 int SIZE = 3;
+int n_matr; // Number of matrices to be reduced
+matr *matrices; // Matrices to be reduced
+matr min_matr; // Matrix loading the result of the minimuns among the matrices
 
-//DEBUG
 void print_matrix(matr *m) {
 	for (int i = 0; i < m->row; i++)
 		for (int j = 0; j < m->col; j++)
@@ -49,6 +56,17 @@ void file_to_matrix(FILE *path_matr, matr *m) {
 	m->tab = matrix;
 }
 
+void *reduction(void *raw_position) {
+	long min_value = LONG_MAX;
+	int position = *((int *) raw_position);
+	int i = floor(position/SIZE);
+	int j = position - i*SIZE;
+
+	for (int k = 0; k < n_matr; ++k) min_value = min(min_value, matrices[k].tab[i][j]);
+
+	min_matr.tab[i][j] = min_value;
+}
+
 int main(int args, char *argv[]) {
 	/*Input validation*/
 	if (args != 2) {
@@ -63,22 +81,49 @@ int main(int args, char *argv[]) {
 	}
 
 	/*Getting the matrices*/
-	int n_matr; // Number of matrices
 	fscanf(path_matr, "%d", &n_matr);
-	matr *matrices = emalloc(n_matr * sizeof(matr));
+	matrices = emalloc(n_matr * sizeof(matr));
 
-	for (int i = 0; i < n_matr; i++) {
+	for (int i = 0; i < n_matr; i++)
 		file_to_matrix(path_matr, &matrices[i]);
-		print_matrix(&matrices[i]);
+
+	min_matr = *((matr *) emalloc(sizeof(matr)));
+	min_matr.tab = (long**) emalloc(SIZE * sizeof(long*));
+	for (int i = 0; i < SIZE; i++) min_matr.tab[i] = (long*) emalloc(SIZE * sizeof(long));
+
+	printf("Execute the reduction...\n");
+	// Timing (beginning)
+	struct timeval begin, end;
+	gettimeofday(&begin, NULL);
+
+	// Obtaining the minimuns among the matrices
+	pthread_t *position_thread = emalloc(SIZE * SIZE * sizeof(pthread_t));
+	for (int i = 0; i < SIZE * SIZE; i++) {
+		int *raw_pos = emalloc(sizeof(int));
+		*raw_pos = i;
+		if (pthread_create(&position_thread[i], NULL, reduction, (void *) raw_pos)) {
+			fprintf(stderr, "ERROR: thread not created\n");
+            exit(1);
+		}
 	}
 
-	int devId = 10; //GPU
-	checkCuda(cudaSetDevice(devId)); //GPU
-  	cudaDeviceReset(); //GPU
+	// Closing the threads
+	for (int i = 0; i < SIZE * SIZE; i++) {
+        if (pthread_join(position_thread[i], NULL)) {
+            fprintf(stderr, "ERROR: thread not joined\n");
+            exit(1);
+        }
+    }
 
-	matr *matrices_gpu = emalloc(n_matr * sizeof(matr)); //GPU
+    double cpuTime = 1000000*(double)(end.tv_sec - begin.tv_sec);
+	cpuTime +=	(double)(end.tv_usec - begin.tv_usec);
+	// Timing (ending)
+	printf("Execution Time (microseconds): %9.2f\n", cpuTime);
 
 	/*Finishing*/
+	print_matrix(&min_matr);
+
+	// Clean up memory and close file
 	for (int i=0; i < n_matr; i++)
 		free(matrices[i].tab);
 	
