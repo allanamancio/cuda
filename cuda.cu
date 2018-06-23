@@ -5,14 +5,14 @@
 #include <assert.h>
 
 #define min(x,y) (y + ((x - y) & ((x - y) >> (sizeof(long) * 8 - 1))))
-
+ 
 const int Tile_Width = 1;
 const int WIDTH = 3;
 
 void print_matrix(long *m) {
 	for (int i = 0; i < WIDTH; i++)
 		for (int j = 0; j < WIDTH; j++)
-			printf("P[%d][%d] = %ld\n", i, j, m[i * WIDTH + j]);
+			printf("%ld%c", m[i * WIDTH + j], " \n"[j == WIDTH-1]);
 	printf("\n");
 }
 
@@ -132,17 +132,6 @@ int main(int argc, char* argv[]) {
 	printf("Execution Time (microseconds): %9.2f\n", gpuTime);
 
 	print_matrix(P);
-	/* print result
-	FILE *ptr_file;
-	ptr_file =fopen("matMul_gpu_globalmem.out", "w");
-	if (!ptr_file) return 1;
-
-	for (int i=0; i < Width; i++){
-			for (int j=0; j < Width; j++) fprintf(ptr_file,"%6.2f ", P[i * Width + j]);
-			fprintf(ptr_file,"\n");
-	}
-	fclose(ptr_file); */
-
 
 	// clean up memory
 	free(M);

@@ -21,7 +21,7 @@ matr min_matr; // Matrix loading the result of the minimuns among the matrices
 void print_matrix(matr *m) {
 	for (int i = 0; i < m->row; i++)
 		for (int j = 0; j < m->col; j++)
-			printf("matr[%d][%d] = %ld\n", i, j, m->tab[i][j]);
+			printf("%ld%c", m->tab[i][j], " \n"[j == m->col-1]);
 	printf("\n");
 }
 
@@ -90,11 +90,11 @@ int main(int args, char *argv[]) {
 	min_matr = *((matr *) emalloc(sizeof(matr)));
 	min_matr.tab = (long**) emalloc(SIZE * sizeof(long*));
 	for (int i = 0; i < SIZE; i++) min_matr.tab[i] = (long*) emalloc(SIZE * sizeof(long));
+	min_matr.row = SIZE;
+	min_matr.col = SIZE;
 
 	printf("Execute the reduction...\n");
-	// Timing (beginning)
-	struct timeval begin, end;
-	gettimeofday(&begin, NULL);
+	double tempo = clock();
 
 	// Obtaining the minimuns among the matrices
 	pthread_t *position_thread = emalloc(SIZE * SIZE * sizeof(pthread_t));
@@ -115,11 +115,8 @@ int main(int args, char *argv[]) {
         }
     }
 
-    double cpuTime = 1000000*(double)(end.tv_sec - begin.tv_sec);
-	cpuTime +=	(double)(end.tv_usec - begin.tv_usec);
-	// Timing (ending)
-	printf("Execution Time (microseconds): %9.2f\n", cpuTime);
-
+	printf("Tempo (em microsegundos): %lf\n", 1000000 * (clock() - tempo) / CLOCKS_PER_SEC);
+	
 	/*Finishing*/
 	print_matrix(&min_matr);
 
